@@ -1,0 +1,12 @@
+venv/
+.env
+
+bot.log*
+
+# editors
+.idea/
+.vscode/
+
+# local storage
+bois/
+leaderboards.csv
