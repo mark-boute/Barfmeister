@@ -1,7 +1,7 @@
 from discord import HTTPException
 from discord.ext import commands
 from common.bot_logger import get_logger
-from common.helper_functions import reply_and_delete
+from common.bois_functions import reply_and_delete
 
 logger = get_logger(__name__)
 

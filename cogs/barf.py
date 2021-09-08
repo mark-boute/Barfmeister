@@ -1,8 +1,13 @@
 import discord
 from discord.ext import commands
 from common.bot_logger import get_logger
-from common.helper_functions import add_barf, rem_barf, update_barfjes
-
+from common.bois_functions import (
+    add_barf,
+    rem_barf,
+    update_barfjes,
+    reply_and_delete,
+    get_boi_barf_info,
+)
 
 logger = get_logger(__name__)
 
@@ -25,16 +30,25 @@ class BarfCog(commands.Cog, name="Barf commands"):
     )
     async def add(self, ctx, user: discord.Member, reason: str, date: str = None):
 
-        barf_count = add_barf(ctx, user, reason, date)
-
-        if not barf_count:
+        barf_count = add_barf(user, reason, date)
+        if barf_count == -1:
+            await reply_and_delete(
+                ctx,
+                "Not the correct date format! You should use: DD-MM-YYYY. For instance 14-01-2020",
+            )
+            return
+        if barf_count == -2:
+            await reply_and_delete(
+                ctx,
+                "Only one barf per day allowed",
+            )
             return
 
-        await update_barfjes()
+        await update_barfjes(self.bot.get_channel(722112470969221281))
         await ctx.channel.send(
             f"Barf added, {user.display_name} barfed {barf_count} times!"
         )
-        ctx.message.delete()
+        await ctx.message.delete()
 
     @barf.command(
         help="remove a barf from the scoreboard using: !barf rem [name] [date]"
@@ -42,14 +56,26 @@ class BarfCog(commands.Cog, name="Barf commands"):
     @commands.has_role("Boi")
     async def rem(self, ctx, user: discord.Member, date: str = None):
 
-        barf_info = rem_barf(ctx, user, date)
+        barf_info = rem_barf(user, date)
 
         if not barf_info:
             return
 
-        await update_barfjes()
+        await update_barfjes(self.bot.get_channel(722112470969221281))
         await ctx.channel.send(barf_info)
-        ctx.message.delete()
+        await ctx.message.delete()
+
+    @barf.command(help="testing")
+    @commands.has_role("Boi")
+    async def update(self, ctx):
+        await update_barfjes(ctx, self.bot.get_channel(722112470969221281))
+        await ctx.message.delete()
+
+    @barf.command(
+        help="get a boi's barfjes from a specified year !barf info [boi] [year]"
+    )
+    async def info(self, ctx, member: discord.Member, year: int):
+        await get_boi_barf_info(ctx, member, year)
 
 
 def setup(bot):
